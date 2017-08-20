@@ -300,7 +300,25 @@ void InputHandler::process_EV_KEY(input_event& ev)
 	// Handle key-press here
 	LOGEVENT("TOUCH_KEY: %d\n", ev.code);
 	// Left mouse button is treated as a touch
-	if(ev.code == BTN_LEFT)
+	if(ev.code == BTN_TOUCH)
+	{
+		if(ev.value == 1)
+		{
+			doTouchStart();
+		}
+		else
+		{
+			if (state == AS_IN_ACTION_AREA)
+			{
+				cursor->GetPos(x, y);
+				LOGEVENT("Mouse TOUCH_RELEASE: %d,%d\n", x, y);
+				PageManager::NotifyTouch(TOUCH_RELEASE, x, y);
+			}
+
+			touch_status = TS_NONE;
+		}
+	} 
+	else if(ev.code == BTN_LEFT)
 	{
 		MouseCursor *cursor = PageManager::GetMouseCursor();
 		if(ev.value == 1)
