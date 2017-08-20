@@ -420,6 +420,8 @@ static int vk_modify(struct ev *e, struct input_event *ev)
     // This is used to ditch useless event handlers, like an accelerometer
     if (e->ignored)     return 1;
 
+    printf("Down: (%d, %d), mt_p: (%d, %d), p: (%d, %d)", downX, downY, e->mt_p.x, e->mt_p.y, e->p.x, e->p.y);
+
     if (ev->type == EV_REL && ev->code == REL_Z)
     {
         // This appears to be an accelerometer or another strange input device. It's not the touchscreen.
@@ -436,7 +438,12 @@ static int vk_modify(struct ev *e, struct input_event *ev)
 
 	// Handle keyboard events, value of 1 indicates key down, 0 indicates key up
 	if (ev->type == EV_KEY) {
-		return 0;
+		if(ev->code == BTN_TOUCH && ev->value == 0)
+		{
+			touchReleaseOnNextSynReport = 1;
+		} else {
+			return 0;
+		}
 	}
 
     if (ev->type == EV_ABS) {
@@ -491,9 +498,9 @@ static int vk_modify(struct ev *e, struct input_event *ev)
             {
 #ifndef TW_IGNORE_MAJOR_AXIS_0
                 // We're in a touch release, although some devices will still send positions as well
-                e->mt_p.x = 0;
-                e->mt_p.y = 0;
-                touchReleaseOnNextSynReport = 1;
+                // e->mt_p.x = 0;
+                // e->mt_p.y = 0;
+                // touchReleaseOnNextSynReport = 1;
 #endif
             }
 #ifdef _EVENT_LOGGING
@@ -617,8 +624,8 @@ static int vk_modify(struct ev *e, struct input_event *ev)
     }
 
 #ifdef _EVENT_LOGGING
-    if (ev->type == EV_SYN && ev->code == SYN_REPORT)       printf("EV: %s => EV_SYN  SYN_REPORT\n", e->deviceName);
-    if (ev->type == EV_SYN && ev->code == SYN_MT_REPORT)    printf("EV: %s => EV_SYN  SYN_MT_REPORT\n", e->deviceName);
+    if (ev->type == EV_SYN && ev->code == SYN_REPORT)       printf("EV: %s => EV_SYN  SYN_REPORT %d\n", e->deviceName);
+    if (ev->type == EV_SYN && ev->code == SYN_MT_REPORT)    printf("EV: %s => EV_SYN  SYN_MT_REPORT %d\n", e->deviceName);
 #endif
 
     // Discard the MT versions

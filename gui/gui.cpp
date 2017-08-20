@@ -190,6 +190,8 @@ bool InputHandler::processInput(int timeout_ms)
 		return (ret != -2);  // -2 means no more events in the queue
 	}
 
+	LOGINFO("Event(%d, %d, %d <-> %d %d)\n", ev.type, ev.code, ev.value, ev.value >> 16, ev.value & 0xffff);
+
 	switch (ev.type)
 	{
 	case EV_ABS:
@@ -266,22 +268,18 @@ void InputHandler::process_EV_ABS(input_event& ev)
 
 	if (ev.code == 0)
 	{
-#ifndef TW_USE_KEY_CODE_TOUCH_SYNC
 		if (state == AS_IN_ACTION_AREA)
 		{
 			LOGEVENT("TOUCH_RELEASE: %d,%d\n", x, y);
 			PageManager::NotifyTouch(TOUCH_RELEASE, x, y);
 		}
 		touch_status = TS_NONE;
-#endif
 	}
 	else
 	{
 		if (!touch_status)
 		{
-#ifndef TW_USE_KEY_CODE_TOUCH_SYNC
 			doTouchStart();
-#endif
 		}
 		else
 		{
@@ -300,25 +298,7 @@ void InputHandler::process_EV_KEY(input_event& ev)
 	// Handle key-press here
 	LOGEVENT("TOUCH_KEY: %d\n", ev.code);
 	// Left mouse button is treated as a touch
-	if(ev.code == BTN_TOUCH)
-	{
-		if(ev.value == 1)
-		{
-			doTouchStart();
-		}
-		else
-		{
-			if (state == AS_IN_ACTION_AREA)
-			{
-				cursor->GetPos(x, y);
-				LOGEVENT("Mouse TOUCH_RELEASE: %d,%d\n", x, y);
-				PageManager::NotifyTouch(TOUCH_RELEASE, x, y);
-			}
-
-			touch_status = TS_NONE;
-		}
-	} 
-	else if(ev.code == BTN_LEFT)
+	if(ev.code == BTN_LEFT)
 	{
 		MouseCursor *cursor = PageManager::GetMouseCursor();
 		if(ev.value == 1)
